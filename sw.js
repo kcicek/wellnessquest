@@ -1,8 +1,8 @@
-const CACHE_NAME = 'wellnessquest-v7';
+const CACHE_NAME = 'wellnessquest-v8';
 const CORE_ASSETS = [
   './',
   './index.html',
-  './manifest.webmanifest',
+  './app.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './data/playerStats.json',
