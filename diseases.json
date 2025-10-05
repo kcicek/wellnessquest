@@ -1,0 +1,42 @@
+{
+    "diseases": [
+        {
+            "name": "Diabetes \ud83c\udf6c",
+            "trigger": "sugar > 110 for 3 turns",
+            "effect": {
+                "energy": -5,
+                "money": -10
+            }
+        },
+        {
+            "name": "Heart Disease \u2764\ufe0f",
+            "trigger": "cholesterol > 110 for 2 turns",
+            "effect": {
+                "energy": -10,
+                "money": -15
+            }
+        },
+        {
+            "name": "Hypertension \u26a1",
+            "trigger": "sodium > 110 for 3 turns",
+            "effect": {
+                "energy": -5,
+                "mood": -5
+            }
+        },
+        {
+            "name": "Fatigue \ud83d\udca4",
+            "trigger": "energy < 20",
+            "effect": {
+                "canWork": false
+            }
+        },
+        {
+            "name": "Depression \ud83d\ude29",
+            "trigger": "mood < 25",
+            "effect": {
+                "incomeMultiplier": 0.5
+            }
+        }
+    ]
+}

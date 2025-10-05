@@ -1,0 +1,16 @@
+{
+    "playerStats": {
+        "health": 100,
+        "energy": 100,
+        "fitness": 50,
+        "vitamins": 50,
+        "minerals": 50,
+        "protein": 50,
+        "sugar": 50,
+        "cholesterol": 50,
+        "sodium": 50,
+        "mood": 50,
+        "money": 50,
+        "job": "unemployed"
+    }
+}

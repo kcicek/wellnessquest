@@ -1,0 +1,35 @@
+{
+    "jobs": [
+        {
+            "name": "Office Worker \ud83d\udc68\u200d\ud83d\udcbb",
+            "basePay": 20,
+            "fitnessEffect": -5,
+            "moodEffect": -5
+        },
+        {
+            "name": "Delivery Driver \ud83d\ude9a",
+            "basePay": 25,
+            "fitnessEffect": 5,
+            "moodEffect": -2
+        },
+        {
+            "name": "Trainer \ud83c\udfcb\ufe0f\u200d\u2642\ufe0f",
+            "basePay": 30,
+            "fitnessEffect": 10,
+            "moodEffect": 2
+        },
+        {
+            "name": "Chef \ud83d\udc69\u200d\ud83c\udf73",
+            "basePay": 22,
+            "fitnessEffect": 0,
+            "moodEffect": 3
+        },
+        {
+            "name": "Farmer \ud83e\uddd1\u200d\ud83c\udf3e",
+            "basePay": 28,
+            "fitnessEffect": 8,
+            "moodEffect": 1
+        }
+    ],
+    "incomeFormula": "actualIncome = basePay * (0.8 + fitness / 200) * (energy / 100)"
+}

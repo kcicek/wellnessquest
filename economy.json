@@ -1,0 +1,11 @@
+{
+    "baseIncome": 20,
+    "healthyBonus": 0.01,
+    "moodBonus": 0.1,
+    "diseasePenalty": 10,
+    "peakBonus": 5,
+    "lowMoodPenalty": 0.5,
+    "energyMultiplier": "energy / 100",
+    "healthBonusFormula": "1 + (healthyStats * 0.01)",
+    "incomeFormula": "actualIncome = baseIncome * (0.8 + fitness / 200) * (energy / 100)"
+}

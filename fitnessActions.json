@@ -1,0 +1,32 @@
+{
+    "fitnessActions": [
+        {
+            "action": "Go to Gym \ud83c\udfc3",
+            "cost": 10,
+            "energyChange": -10,
+            "fitnessChange": 10,
+            "moodChange": 5
+        },
+        {
+            "action": "Skip Exercise \ud83d\udeb6",
+            "cost": 0,
+            "energyChange": 5,
+            "fitnessChange": -5,
+            "moodChange": 0
+        },
+        {
+            "action": "Rest Day \ud83d\udecc",
+            "cost": 0,
+            "energyChange": 15,
+            "fitnessChange": 0,
+            "moodChange": 3
+        },
+        {
+            "action": "Overeat \ud83c\udf54",
+            "cost": 0,
+            "energyChange": 10,
+            "fitnessChange": -10,
+            "moodChange": 4
+        }
+    ]
+}
