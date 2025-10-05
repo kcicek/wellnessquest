@@ -168,9 +168,15 @@ export class DailyRunMinigame {
         }
         catch { }
         const overlay = document.getElementById('welcomeOverlay');
+        // Only remove intro overlay if the user explicitly pressed Start (prevents unintended flashing removal)
         if (overlay) {
-            overlay.remove();
-            console.log('[WelcomeOverlay] Removed from startDay safeguard');
+            if (window.__WQ_USER_START) {
+                overlay.remove();
+                console.log('[WelcomeOverlay] Removed from startDay (explicit user start)');
+            }
+            else {
+                console.log('[WelcomeOverlay] Overlay present but preserved (no explicit user start flag)');
+            }
         }
         this.dayCounter++; // increment at each new day start
         this.foodsCollected = [];

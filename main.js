@@ -3,7 +3,6 @@ import { Game } from './src/game';
 import { updateStatsView, appendLog, snapshotStatsForNextTurn, updateDaysSurvived } from './src/ui';
 import { DailyRunMinigame } from './src/minigame';
 import { audioManager } from './src/audio';
-// Removed dynamic icon import since icons are now served from public.
 (async function init() {
     appendLog('Loading data...');
     const data = await loadAllData();
@@ -17,23 +16,88 @@ import { audioManager } from './src/audio';
     window.minigame = mini;
     appendLog('Game initialized. Configure settings then start your first day.');
 })();
-// PWA: register service worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration failed', err));
-        // After SW registration attempt to verify icon visibility
-        setTimeout(() => {
-            const headerIcon = document.querySelector('header img');
-            if (headerIcon instanceof HTMLImageElement) {
-                if (!headerIcon.complete || headerIcon.naturalWidth === 0) {
-                    console.warn('Header icon not loaded, forcing reload of src');
-                    const src = headerIcon.getAttribute('src');
-                    if (src)
-                        headerIcon.src = src + '?v=' + Date.now();
-                }
+// Overlay reliability helpers (module scope)
+let __wq_overlayHealChecks = 0;
+const __WQ_MAX_HEAL_CHECKS = 8;
+let __wq_healTimer = null;
+function __wq_scheduleOverlayHeal(buildFn, startedFlagFn) {
+    if (__wq_healTimer != null)
+        return;
+    const loop = () => {
+        if (window.__WQ_USER_START) {
+            if (__wq_healTimer)
+                clearTimeout(__wq_healTimer);
+            __wq_healTimer = null;
+            return;
+        }
+        const hasOverlay = !!document.getElementById('welcomeOverlay');
+        if (!hasOverlay && !startedFlagFn()) {
+            console.info('[WelcomeOverlay] heal loop reinject (overlay missing, not started)');
+            buildFn();
+        }
+        __wq_overlayHealChecks++;
+        if (__wq_overlayHealChecks < __WQ_MAX_HEAL_CHECKS)
+            __wq_healTimer = window.setTimeout(loop, 700);
+        else {
+            console.info('[WelcomeOverlay] heal loop finished');
+            __wq_healTimer = null;
+        }
+    };
+    __wq_healTimer = window.setTimeout(loop, 700);
+}
+function __wq_attachOverlayGuardian(buildFn, startedFlagFn) {
+    if (window.__WQ_OVERLAY_GUARD)
+        return;
+    try {
+        const obs = new MutationObserver(() => {
+            if (window.__WQ_USER_START)
+                return;
+            const hasOverlay = !!document.getElementById('welcomeOverlay');
+            if (!hasOverlay && !startedFlagFn()) {
+                console.info('[WelcomeOverlay] guardian reinject (overlay removed unexpectedly)');
+                buildFn();
             }
-        }, 600);
-    });
+        });
+        obs.observe(document.body, { childList: true });
+        window.__WQ_OVERLAY_GUARD = obs;
+        console.info('[WelcomeOverlay] guardian attached');
+    }
+    catch (e) {
+        console.info('[WelcomeOverlay] guardian attach failed', e);
+    }
+}
+// PWA: register service worker
+// Service Worker: only register in production to avoid dev HMR reconnect issues
+if ('serviceWorker' in navigator) {
+    if (import.meta.env && import.meta.env.PROD) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration failed', err));
+            setTimeout(() => {
+                const headerIcon = document.querySelector('header img');
+                if (headerIcon instanceof HTMLImageElement) {
+                    if (!headerIcon.complete || headerIcon.naturalWidth === 0) {
+                        console.warn('Header icon not loaded, forcing reload of src');
+                        const src = headerIcon.getAttribute('src');
+                        if (src)
+                            headerIcon.src = src + '?v=' + Date.now();
+                    }
+                }
+            }, 600);
+        });
+    }
+    else {
+        // Dev mode: aggressively unregister any previously installed SW to prevent stale cache & HMR websocket interference
+        navigator.serviceWorker.getRegistrations().then(regs => {
+            if (regs.length)
+                console.info('[DevSW] Unregistering stale service workers:', regs.length);
+            regs.forEach(r => r.unregister());
+        }).catch(() => { });
+        if (caches && caches.keys) {
+            caches.keys().then(keys => {
+                keys.filter(k => /wellnessquest|vite|workbox/i.test(k)).forEach(k => caches.delete(k));
+            }).catch(() => { });
+        }
+    }
 }
 // Welcome screen bootstrapping (injected dynamically if markup exists later)
 document.addEventListener('DOMContentLoaded', () => {
@@ -42,6 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const SESSION_FLAG = 'wq.intro.shown.session';
     const DIAG = (msg, meta) => console.info('[WelcomeOverlay]', msg, meta || '');
     let overlayAttempted = false;
+    // Accessor used by guardian/heal helpers
+    const startedFlagFn = () => !!localStorage.getItem(START_FLAG);
     // Migrate legacy flag if present
     try {
         if (!localStorage.getItem(START_FLAG) && localStorage.getItem(LEGACY_FLAG)) {
@@ -178,6 +244,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // Initialize audio context on first explicit user action
             audioManager.init();
+            // Mark explicit user start to allow overlay removal inside startDay
+            window.__WQ_USER_START = true;
             window.__WQ_ALLOW_START = true;
             try {
                 window.minigame.startDay();
@@ -197,6 +265,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const overlay = document.getElementById('welcomeOverlay');
             if (overlay)
                 overlay.remove();
+            try {
+                window.__WQ_OVERLAY_GUARD?.disconnect?.();
+                delete window.__WQ_OVERLAY_GUARD;
+                DIAG('guardian disconnected (user start)');
+            }
+            catch { }
+            if (__wq_healTimer) {
+                clearTimeout(__wq_healTimer);
+                __wq_healTimer = null;
+            }
         });
     }
     const detailsToggle = document.getElementById('detailsToggle');
@@ -259,9 +337,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         catch { }
     }
+    // (Removed duplicate inline overlay reliability helpers; using global versions declared above.)
     function buildWelcomeOverlay() {
         if (document.getElementById('welcomeOverlay'))
             return;
+        DIAG('building overlay');
         const wrap = document.createElement('div');
         wrap.id = 'welcomeOverlay';
         wrap.style.cssText = 'position:fixed;inset:0;background:linear-gradient(135deg,#123050,#0d1e33);color:#fff;display:flex;align-items:center;justify-content:center;z-index:2000;padding:1rem;';
@@ -302,42 +382,36 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="text-align:center;font-size:0.5rem;letter-spacing:.5px;opacity:0.5;">v0.1 prototype</div>
       </div>`;
         document.body.appendChild(wrap);
+        __wq_attachOverlayGuardian(buildWelcomeOverlay, startedFlagFn);
+        __wq_scheduleOverlayHeal(buildWelcomeOverlay, startedFlagFn);
         bindStart();
     }
     // Bind start if overlay already injected (cold load path)
     bindStart();
-    // Fallback phases to ensure at least one overlay or an auto-start
+    // Fallback phases to ensure at least one overlay appears. Removed previous auto-start
+    // behavior because it could start the game then immediately remove the overlay before
+    // the user interacted, creating a flashing effect with no stable intro.
     setTimeout(() => {
         const running = window.minigame?.running;
         const hasOverlay = !!document.getElementById('welcomeOverlay');
         const started = !!localStorage.getItem(START_FLAG);
         const sessionSeen = !!sessionStorage.getItem(SESSION_FLAG);
         if (!running && !hasOverlay && !sessionSeen && !overlayAttempted) {
-            DIAG('fallback phase1 inject');
+            DIAG('fallback phase1 inject (no overlay, not running)');
             buildWelcomeOverlay();
             overlayAttempted = true;
             sessionStorage.setItem(SESSION_FLAG, '1');
             return;
         }
-        if (started && !running && !hasOverlay) {
-            DIAG('recovery auto-start (flag true, no overlay)');
-            window.__WQ_ALLOW_START = true;
-            try {
-                window.minigame?.startDay();
-            }
-            catch (e) {
-                DIAG('auto-start failed', e);
-            }
-            return;
-        }
-        if (!started && !hasOverlay) {
-            DIAG('scheduling second check');
+        // Second check only attempts to (re)inject overlay; never auto-start
+        if (!started && !hasOverlay && !running) {
+            DIAG('scheduling second check (overlay still missing)');
             setTimeout(() => {
                 const againOverlay = !!document.getElementById('welcomeOverlay');
                 const againStarted = !!localStorage.getItem(START_FLAG);
                 const runningNow = window.minigame?.running;
                 if (!againOverlay && !againStarted && !runningNow) {
-                    DIAG('second check force inject');
+                    DIAG('second check force inject (still missing)');
                     buildWelcomeOverlay();
                 }
             }, 900);
