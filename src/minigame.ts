@@ -633,7 +633,16 @@ export class DailyRunMinigame {
     autoWrap.style.color = '#345';
     const auto = document.createElement('input');
     auto.type = 'checkbox';
-    try { auto.checked = localStorage.getItem('wq.autoNextDay') === '1'; } catch {}
+    try {
+      const stored = localStorage.getItem('wq.autoNextDay');
+      if (stored == null) {
+        // Default ON for new users
+        auto.checked = true;
+        localStorage.setItem('wq.autoNextDay','1');
+      } else {
+        auto.checked = stored === '1';
+      }
+    } catch {}
     auto.addEventListener('change', () => {
       try { localStorage.setItem('wq.autoNextDay', auto.checked ? '1' : '0'); } catch {}
     });

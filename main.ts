@@ -64,7 +64,7 @@ function __wq_attachOverlayGuardian(buildFn: () => void, startedFlagFn: () => bo
 if ('serviceWorker' in navigator) {
   if (import.meta.env && import.meta.env.PROD) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration failed', err));
+  navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration failed', err));
       setTimeout(() => {
         const headerIcon = document.querySelector('header img');
         if (headerIcon instanceof HTMLImageElement) {
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wrap.innerHTML = `
       <div style="background:#152a43;width:min(560px,92%);max-height:92%;overflow:auto;border-radius:24px;padding:1.35rem 1.4rem 1.55rem;box-shadow:0 12px 42px -8px rgba(0,0,0,0.65);display:flex;flex-direction:column;gap:1rem;font-size:0.85rem;line-height:1.4;">
         <div style="display:flex;flex-direction:row;align-items:flex-start;gap:0.9rem;">
-          <img src="/icons/icon-192.png" alt="WellnessQuest Icon" width="72" height="72" style="border-radius:18px;flex:0 0 auto;box-shadow:0 4px 14px -4px rgba(0,0,0,0.55);background:#0f1826;object-fit:cover;" />
+          <img src="icons/icon-192.png" alt="WellnessQuest Icon" width="72" height="72" style="border-radius:18px;flex:0 0 auto;box-shadow:0 4px 14px -4px rgba(0,0,0,0.55);background:#0f1826;object-fit:cover;" />
           <div style="display:flex;flex-direction:column;gap:0.65rem;">
             <h2 style="margin:0;font-size:1.35rem;letter-spacing:.5px;font-weight:700;">Welcome to WellnessQuest</h2>
             <p style="margin:0;font-size:0.78rem;opacity:0.9;">Balance nutrition, fitness, mood, and energy. Collect foods and maybe hit the gym each day. Avoid excess while preventing deficiencies.</p>

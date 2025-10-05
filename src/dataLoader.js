@@ -6,13 +6,15 @@ async function fetchJSON(path) {
 }
 export async function loadAllData() {
     // JSON expected in root directory relative to index.html
+    // Assets now served from public/data/ (root-relative after build with base) so use relative folder path
+    const basePath = 'data/';
     const [playerStatsFile, foodsFile, fitnessFile, diseasesFile, economyFile, gameRulesFile] = await Promise.all([
-        fetchJSON('playerStats.json'),
-        fetchJSON('foods.json'),
-        fetchJSON('fitnessActions.json'),
-        fetchJSON('diseases.json'),
-        fetchJSON('economy.json'),
-        fetchJSON('gameRules.json')
+        fetchJSON(basePath + 'playerStats.json'),
+        fetchJSON(basePath + 'foods.json'),
+        fetchJSON(basePath + 'fitnessActions.json'),
+        fetchJSON(basePath + 'diseases.json'),
+        fetchJSON(basePath + 'economy.json'),
+        fetchJSON(basePath + 'gameRules.json')
     ]);
     return {
         playerStats: playerStatsFile.playerStats,

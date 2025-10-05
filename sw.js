@@ -1,11 +1,11 @@
 const CACHE_NAME = 'wellnessquest-v6';
 const CORE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  './main.ts', // will be requested as module; build tools may output /main.js in production
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './main.ts', // during dev; production build will request main.js which will then be cached on first fetch
   './foods.json',
   './fitnessActions.json',
   './diseases.json',

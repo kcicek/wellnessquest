@@ -1,0 +1,7 @@
+{
+  "rules": {
+    "turnCycle": ["eatPhase","fitnessPhase","workPhase","diseaseCheckPhase","endOfDay"],
+    "statLimits": {"min":0,"max":120,"moodMax":100,"energyMax":100,"fitnessMax":100,"healthMax":100},
+    "statDecay": {"vitamins":-1,"minerals":-1,"protein":-1,"fitness":-2,"energy":-5,"mood":-2}
+  }
+}
